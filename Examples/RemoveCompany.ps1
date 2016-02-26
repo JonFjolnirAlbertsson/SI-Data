@@ -1,0 +1,1 @@
+﻿Remove-NAVCompany -ServerInstance NAV71PP -CompanyName 'Parma Plast AS Import'
