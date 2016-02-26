@@ -5,5 +5,5 @@ Import-module (join-path $PSScriptRoot 'NAVModules\NAVModules.psm1') -DisableNam
 Import-module NAVModules -Force -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
 
 Clear-host
-write-host -ForegroundColor Yellow 'Get-Command -Module ''Cloud.Ready.Software.*'''
-get-command -Module 'Cloud.Ready.Software.*'
+write-host -ForegroundColor Yellow 'Get-Command -Module ''NAVModules*'''
+get-command -Module 'NAVModules*'
