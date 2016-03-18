@@ -1,5 +1,5 @@
 ﻿$NAVVersion = 2016
-$Licensefile    = 'C:\NAVUpgrade\License\SI-Data 06082015.flf'
+$Licensefile    = 'C:\GitHub\NAVUpgrade\License\SI-Data 06082015.flf'
 $NAVRootFolder = "C:\NAV Setup\NAV$NAVVersion"
 $TmpLocation = "$NAVRootFolder\Temp\"
 $ISODir = "$NAVRootFolder\ISO"
