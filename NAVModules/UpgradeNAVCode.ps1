@@ -2,13 +2,11 @@
 {
     [CmdletBinding()]
     param(
-        [string] $RootFolderPath = "C:\NavUpgrade\", 
-        [string] $CompanyFolderName = "UpgradeCompany",
-        [string] $CompanyOriginalFileName = "2015_CU8_NO_AllObjects.txt",
-        [string] $CompanyModifiedFileName = "SI-Data NAV2015CU8NO All Objects.txt",
-        [string] $CompanyTargetFileName = "2016_CU4_NO_AllObjects.txt",
+        [string] $WorkingFolderPath, 
+        [string] $OriginalFileName,
+        [string] $ModifiedFileName,
+        [string] $TargetFileName,
         [UpgradeAction] $UpgradeAction = [UpgradeAction]::Split,
-        [string] $Version = '9',
         [string] $CompareObject = "*.TXT",
         [bool] $OpenConflictFilesInKdiff = $false,
         [bool] $RemoveModifyFilesNotInTarget = $false,
@@ -18,22 +16,22 @@
     {
         try
         { 
-
-            $Version = $Version + '.0*'
+            #Programs to use
+            $NotepadPlus = Join-Path 'C:\Program Files (x86)\Notepad++' 'notepad++.exe'
+            $Kdiff = Join-Path 'C:\Program Files\KDiff3' 'kdiff3.exe'
 
             # Set the right folder path based on company folder and files name
-            $RootFolderPath = $RootFolderPath + "$CompanyFolderName\"
-            $SourceOriginal = $RootFolderPath  + $CompanyOriginalFileName
-            $SourceModified = $RootFolderPath + $CompanyModifiedFileName
-            $SourceTarget = $RootFolderPath  + $CompanyTargetFileName
+            $SourceOriginal = $OriginalFileName
+            $SourceModified = $ModifiedFileName
+            $SourceTarget = $TargetFileName
 
-            $DestinationOriginal = $RootFolderPath  + "Original\"
-            $DestinationModified = $RootFolderPath  + "Modified\"
-            $DestinationTarget = $RootFolderPath  + "Target\"
+            $DestinationOriginal = $WorkingFolderPath  + "\Original\"
+            $DestinationModified =  $WorkingFolderPath  + "\Modified\"
+            $DestinationTarget =  $WorkingFolderPath  + "\Target\"
 
-            $Delta = $RootFolderPath  + "Delta\"
-            $Result = $RootFolderPath + "Result\"
-            $Merged = $RootFolderPath  + "Merged\"
+            $Delta =  $WorkingFolderPath  + "\Delta\"
+            $Result =  $WorkingFolderPath + "\Result\"
+            $Merged =  $WorkingFolderPath  + "\Merged\"
 
             # Check if folders exists. If not create them.
             if(!(Test-Path -Path $DestinationOriginal )){
@@ -66,20 +64,7 @@
 
             if(!(Test-Path -Path $JoinPath )){
                 New-Item -ItemType directory -Path $JoinPath
-            }
-
-            if(([string]::Equals($Version, "7.1")) -or ($Version -eq "71")-or ($Version -eq "7.1*"))
-            {
-                Import-Module "C:\Users\jal\OneDrive for Business\Files\NAV\Script\NAV2013R2\StartingISENAV71.ps1"  
-            }
-            if(([string]::Equals($Version, "8.0")) -or ($Version -eq "80")-or ($Version -like '8.0*'))
-            {
-                Import-Module "C:\Users\jal\OneDrive for Business\Files\NAV\Script\NAV2015\StartingISENAV80.ps1" 
-            } 
-            if(([string]::Equals($Version, "9.0")) -or ($Version -eq "90")-or ($Version -like '9.0*'))
-            {
-                Import-Module "C:\Users\jal\OneDrive for Business\Files\NAV\Script\NAV2016\StartingISENAV90.ps1" 
-            }    
+            }   
 
             $CODFolder = $Result + "COD\"
             $TABFolder = $Result + "TAB\"
@@ -123,14 +108,16 @@
                     #{ 
 				        $ResultFiles | 
 					        Where-Object MergeResult -eq 'Conflict' | 
-					        foreach { NOTEPAD $_.Conflict }
+					        #foreach { NOTEPAD $_.Conflict }
+                            foreach { $NotepadPlus $_.Conflict}
 
 				        Write-Host "`nOpen three-way merge-tool KDIFF3 for each object with conflict(s)" -foreground Green
 				        Write-Host "  Note: The example, KDIFF3, is a free merge tool available here: http://kdiff3.sourceforge.net/" -foreground Green
 				        # Open three-way merge-tool KDIFF3 for each object with conflict(s)
 				        $ResultFiles | 
 					        Where-Object MergeResult -eq 'Conflict' | 
-					        foreach { & "C:\Program Files\KDiff3\kdiff3" $_.Original $_.Modified $_.Target -o $_.Result }
+					        #foreach { & "C:\Program Files\KDiff3\kdiff3" $_.Original $_.Modified $_.Target -o $_.Result }
+                            foreach {& $Kdiff $_.Original $_.Modified $_.Target -o  (join-path $Merged (Get-Item $_.Original.FileName).Name) }
                     #}
                 }else
                 {
