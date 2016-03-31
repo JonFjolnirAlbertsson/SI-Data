@@ -30,7 +30,7 @@
             $range = 1..49999
             $CompModified = Get-ChildItem -Recurse -path $ModifiedFolder | where-object {$_.Name -like $CompareObject -and $range -contains ($_.name -replace $ComparingStr,'$1')}
             $CompTarget = Get-ChildItem -Recurse -path $TargetFolder | where-object {$_.Name -like $CompareObject -and $range -contains ($_.name -replace $ComparingStr,'$1')} 
-                $results = @(Compare-Object  -casesensitive -ReferenceObject $CompModified -DifferenceObject $CompTarget -property name -passThru)
+            $results = @(Compare-Object  -casesensitive -ReferenceObject $CompModified -DifferenceObject $CompTarget -property name -passThru)
             [String] $MessageStr = ""
             [String] $RemovePath = ""
             foreach($result in $results)

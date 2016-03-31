@@ -1,4 +1,14 @@
-﻿function UpgradeNAVCode
+﻿<#
+.Synopsis
+   Split Original, Modified and Target object file. Creates Folder structure under the working folder
+.DESCRIPTION
+   Uses standard NAV upgrade objects functions
+.NOTES
+   
+.PREREQUISITES
+   
+#>
+function Merge-NAVCode
 {
     [CmdletBinding()]
     param(
@@ -8,9 +18,9 @@
         [string] $TargetFileName,
         [UpgradeAction] $UpgradeAction = [UpgradeAction]::Split,
         [string] $CompareObject = "*.TXT",
-        [bool] $OpenConflictFilesInKdiff = $false,
-        [bool] $RemoveModifyFilesNotInTarget = $false,
-        [bool] $RemoveOriginalFilesNotInTarget = $false
+        [Switch] $OpenConflictFilesInKdiff,
+        [Switch] $RemoveModifyFilesNotInTarget,
+        [Switch] $RemoveOriginalFilesNotInTarget
         )
     PROCESS
     {
@@ -94,7 +104,7 @@
                 write-host "Empty the folder for result files" -foregroundcolor "white" 
                 Remove-Item -Path "$Result*" -recurse
 
-                if ($OpenConflictFilesInKdiff -eq $True)
+                if ($OpenConflictFilesInKdiff)
                 {
                     $ResultFiles = Merge-NAVApplicationObject -Modified $ModifiedCompareObject -Original $OriginalCompareObject -Result $Result -Target $TargetCompareObject -DateTimeProperty FromTarget -ModifiedProperty FromModified -VersionListProperty FromTarget -Force 
 				    Write-Host "`nOpen NOTEPAD for each CONFLICT file" -foreground Green
@@ -109,7 +119,7 @@
 				        $ResultFiles | 
 					        Where-Object MergeResult -eq 'Conflict' | 
 					        #foreach { NOTEPAD $_.Conflict }
-                            foreach { $NotepadPlus $_.Conflict}
+                            foreach {& $NotepadPlus $_.Conflict}
 
 				        Write-Host "`nOpen three-way merge-tool KDIFF3 for each object with conflict(s)" -foreground Green
 				        Write-Host "  Note: The example, KDIFF3, is a free merge tool available here: http://kdiff3.sourceforge.net/" -foreground Green
@@ -173,7 +183,7 @@
                 get-childitem  -path $Result  | where-object {$_.Name -like "*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
                 
 
-                if (($RemoveOriginalFilesNotInTarget -eq $True))
+                if ($RemoveOriginalFilesNotInTarget)
                 {
                     write-host "Delete standard object files from previous version that that do not exists in Target version." -foregroundcolor "white"
                     write-host "Starting comparing files from  the original folder $DestinationOriginal with the files in the target folder $DestinationTarget" -foregroundcolor "white"
@@ -219,7 +229,7 @@
                     Write-Host $MessageStr -foregroundcolor "yellow"    
                     if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
                 }
-                if (($RemoveModifyFilesNotInTarget -eq $True))
+                if ($RemoveModifyFilesNotInTarget)
                 {
                     write-host "Remove object files from previous versions that are found in the Modify folder but not in the Target folder" -foregroundcolor "white"  
                     write-host "Starting removing files from previous versions. The files in the range 1..49999 will be removed from the folder $JoinPath" -foregroundcolor "white"

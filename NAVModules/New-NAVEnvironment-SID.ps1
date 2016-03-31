@@ -1,4 +1,4 @@
-﻿function New-NAVEnvironment {
+﻿function New-NAVEnvironment-SID {
     [CmdletBinding()]
     param(
         [String]$ServerInstance,
@@ -22,7 +22,7 @@
     }
 
     write-Host -ForegroundColor Green "Restoring Backup $BackupFile to $Databasename"
-    Restore-SQLBackupFile -BackupFile $BackupFile -DatabaseServer $DatabaseServer -DatabaseInstance $DatabaseInstance -DatabaseName $Databasename -ErrorAction Stop
+    Restore-SQLBackupFile-SID -BackupFile $BackupFile -DatabaseServer $DatabaseServer -DatabaseInstance $DatabaseInstance -DatabaseName $Databasename -ErrorAction Stop
 
     write-Host -ForegroundColor Green "Creating ServerInstance $ServerInstance"
     $Object = New-NAVServerInstance `
@@ -41,13 +41,13 @@
                 CREATE USER [$($ServerInstanceObject.ServiceAccount)] FOR LOGIN [$($ServerInstanceObject.ServiceAccount)]                    
             END"#>
     $SQLCommand = "CREATE USER [$($ServerInstanceObject.ServiceAccount)] FOR LOGIN [$($ServerInstanceObject.ServiceAccount)]"        
-    Invoke-SQL `
+    Invoke-SQL-SID `
         -DatabaseServer $ServerInstanceObject.DatabaseServer `
         -DatabaseInstance $ServerInstanceObject.DatabaseInstance `
         -DatabaseName $ServerInstanceObject.DatabaseName `
         -SQLCommand $SQLCommand `
         -ErrorAction SilentlyContinue
-    Invoke-SQL `
+    Invoke-SQL-SID `
         -DatabaseServer $ServerInstanceObject.DatabaseServer `
         -DatabaseInstance $ServerInstanceObject.DatabaseInstance `
         -DatabaseName $ServerInstanceObject.DatabaseName `

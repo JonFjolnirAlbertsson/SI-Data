@@ -28,7 +28,7 @@
             write-host "This process can take some minutes ..." -foregroundcolor "white"
             $CompOriginal = Get-ChildItem -Recurse -path $OriginalFolder | where-object {$_.Name -like $CompareObject}
             $CompTarget = Get-ChildItem -Recurse -path $TargetFolder | where-object {$_.Name -like $CompareObject}
-            $results = @(Compare-Object  -casesensitive -ReferenceObject $CompOriginal -DifferenceObject $CompTarget)
+            $results = @(Compare-Object  -casesensitive -ReferenceObject $CompOriginal -DifferenceObject $CompTarget -property Name -passThru)
             [String] $MessageStr = ""
             [String] $RemovePath = ""
             foreach($result in $results)
@@ -37,7 +37,7 @@
                 #$MessageStr = "Processing file " + $result.InputObject + "  " + $result.SideIndicator + " from the $JoinPath folder."  
                 #if ($result.SideIndicator -eq "<=")
                 #{
-                    $RemovePath = $JoinPath + $result.InputObject
+                    $RemovePath = $JoinPath + $result.Name
                     $MessageStr = "Deleting the file $RemovePath. The SideIndicator is " + $result.SideIndicator + "."  
                     if((Test-Path -Path $RemovePath)){
                             remove-item -path $RemovePath -force
@@ -57,14 +57,14 @@
             $MessageStr = "Deleting the file $RemovePath." 
             Write-Host $MessageStr -foregroundcolor "yellow"    
             if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
-            $RemovePath  = $JoinPath + "TAB15000008.TXT"
-            $MessageStr = "Deleting the file $RemovePath." 
-            Write-Host $MessageStr -foregroundcolor "yellow"    
-            if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
-            $RemovePath  = $JoinPath + "PAG15000008.TXT"
-            $MessageStr = "Deleting the file $RemovePath." 
-            Write-Host $MessageStr -foregroundcolor "yellow"    
-            if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
+            #$RemovePath  = $JoinPath + "TAB15000008.TXT"
+            #$MessageStr = "Deleting the file $RemovePath." 
+            #Write-Host $MessageStr -foregroundcolor "yellow"    
+            #if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
+            #$RemovePath  = $JoinPath + "PAG15000008.TXT"
+            #$MessageStr = "Deleting the file $RemovePath." 
+            #Write-Host $MessageStr -foregroundcolor "yellow"    
+            #if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
    
             write-host "Execution finished."
         }

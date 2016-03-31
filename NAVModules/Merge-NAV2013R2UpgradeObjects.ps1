@@ -1,5 +1,14 @@
-﻿#Created copy for NAV 2013 R2
-function Merge-NAVUpgradeObjects
+﻿<#
+.Synopsis
+   Created copy for NAV 2013 R2
+.DESCRIPTION
+   Uses Cloud Ready scripts
+.NOTES
+   
+.PREREQUISITES
+   
+#>
+function Merge-NAV2013R2UpgradeObjects
 {
     [CmdLetBinding()]
     param(
