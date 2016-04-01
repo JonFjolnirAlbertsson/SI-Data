@@ -1,4 +1,4 @@
-﻿function RemoveModifiedFilesNotInTarget
+﻿function Remove-ModifiedFilesNotInTarget
 {
     [CmdletBinding()]
     param(

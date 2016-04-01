@@ -185,81 +185,11 @@ function Merge-NAVCode
 
                 if ($RemoveOriginalFilesNotInTarget)
                 {
-                    write-host "Delete standard object files from previous version that that do not exists in Target version." -foregroundcolor "white"
-                    write-host "Starting comparing files from  the original folder $DestinationOriginal with the files in the target folder $DestinationTarget" -foregroundcolor "white"
-                    write-host "The files will be removed from the folder $JoinPath" -foregroundcolor "white"
-                    write-host "This process can take some minutes ..." -foregroundcolor "white"
-                    $CompOriginal = Get-ChildItem -Recurse -path $DestinationOriginal | where-object {$_.Name -like $CompareObject}
-                    $CompTarget = Get-ChildItem -Recurse -path $DestinationTarget | where-object {$_.Name -like $CompareObject}
-                    $results = @(Compare-Object  -casesensitive -ReferenceObject $CompOriginal -DifferenceObject $CompTarget)
-                    [String] $MessageStr = ""
-                    [String] $RemovePath = ""
-                    foreach($result in $results)
-                    {
-                        $i++
-                        #$MessageStr = "Processing file " + $result.InputObject + "  " + $result.SideIndicator + " from the $JoinPath folder."  
-                        #if ($result.SideIndicator -eq "<=")
-                        #{
-                            $RemovePath = $JoinPath + $result.InputObject
-                            $MessageStr = "Deleting the file $RemovePath. The SideIndicator is " + $result.SideIndicator + "."  
-                            if((Test-Path -Path $RemovePath)){
-                                 remove-item -path $RemovePath -force
-                            }else {
-                              $MessageStr = "The file $RemovePath, with the SideIndicator " + $result.SideIndicator + " does not exists."
-                            }                                          
-                        #}
-                        Write-Host $MessageStr -foregroundcolor "yellow"
-                        #Write-Progress -activity $MessageStr -status "Percent added: " -PercentComplete (($i / $results.Length)  * 100)
-                    
-                    } 
-                    $RemovePath  = $JoinPath + "MEN1010.TXT"  
-                    $MessageStr = "Deleting the file $RemovePath." 
-                    Write-Host $MessageStr -foregroundcolor "yellow"
-                    if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
-                    $RemovePath  = $JoinPath + "MEN1030.TXT"  
-                    $MessageStr = "Deleting the file $RemovePath." 
-                    Write-Host $MessageStr -foregroundcolor "yellow"    
-                    if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
-                    $RemovePath  = $JoinPath + "TAB15000008.TXT"
-                    $MessageStr = "Deleting the file $RemovePath." 
-                    Write-Host $MessageStr -foregroundcolor "yellow"    
-                    if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
-                    $RemovePath  = $JoinPath + "PAG15000008.TXT"
-                    $MessageStr = "Deleting the file $RemovePath." 
-                    Write-Host $MessageStr -foregroundcolor "yellow"    
-                    if((Test-Path -Path $RemovePath)){remove-item -path $RemovePath -force} else {$MessageStr = "The file $RemovePath does not exists."}
+                    Remove-OriginalFilesNotInTarget -CompareObject $CompareObject -OriginalFolder $DestinationOriginal -TargetFolder $DestinationTarget -WorkingFolderPath $JoinPath                     
                 }
                 if ($RemoveModifyFilesNotInTarget)
                 {
-                    write-host "Remove object files from previous versions that are found in the Modify folder but not in the Target folder" -foregroundcolor "white"  
-                    write-host "Starting removing files from previous versions. The files in the range 1..49999 will be removed from the folder $JoinPath" -foregroundcolor "white"
-                    write-host "This process can take some minutes ..." -foregroundcolor "white"  
-                  
-                    $ComparingStr = '[A-Z][A-Z][A-Z](\d+)\.TXT'
-                    $range = 1..49999
-                    $CompModified = Get-ChildItem -Recurse -path $DestinationModified | where-object {$_.Name -like $CompareObject -and $range -contains ($_.name -replace $ComparingStr,'$1')}
-                    $CompTarget = Get-ChildItem -Recurse -path $DestinationTarget | where-object {$_.Name -like $CompareObject -and $range -contains ($_.name -replace $ComparingStr,'$1')} 
-                     $results = @(Compare-Object  -casesensitive -ReferenceObject $CompModified -DifferenceObject $CompTarget -property name -passThru)
-                    [String] $MessageStr = ""
-                    [String] $RemovePath = ""
-                    foreach($result in $results)
-                    {
-                        $i++
-                        #$MessageStr = "Processing file " + $result.InputObject + "  " + $result.SideIndicator + " from the $JoinPath folder."  
-                        #if ($result.SideIndicator -eq "<=")
-                        #{
-                            $RemovePath = $JoinPath + $result.name
-                            $MessageStr = "Deleting the file $RemovePath. The SideIndicator is " + $result.SideIndicator + "."  
-                            if((Test-Path -Path $RemovePath)){
-                                 remove-item -path $RemovePath -force
-                            }else {
-                              $MessageStr = "The file $RemovePath, with the SideIndicator " + $result.SideIndicator + " does not exists."
-                            }                                          
-                        #}
-                        Write-Host $MessageStr -foregroundcolor "yellow"
-                        #Write-Progress -activity $MessageStr -status "Percent added: " -PercentComplete (($i / $results.Length)  * 100)
-                    
-                    }                         
+                    Remove-ModifiedFilesNotInTarget -CompareObject $CompareObject -ModifiedFolder $DestinationModified -TargetFolder $DestinationTarget -WorkingFolderPath $JoinPath                          
                 }
                 write-host "Copy manually merged objects to the join folder" -foregroundcolor "white"
                 write-host "Copying files from the folder $Merged to the folder $JoinPath" -foregroundcolor "white"
