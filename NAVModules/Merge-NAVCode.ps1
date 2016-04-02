@@ -13,11 +13,14 @@ function Merge-NAVCode
     [CmdletBinding()]
     param(
         [string] $WorkingFolderPath, 
+        [string] $CompareObject = "*.TXT",
         [string] $OriginalFileName,
         [string] $ModifiedFileName,
         [string] $TargetFileName,
-        [UpgradeAction] $UpgradeAction = [UpgradeAction]::Split,
-        [string] $CompareObject = "*.TXT",
+        [Switch] $Split,
+        [Switch] $Merge,
+        [Switch] $Join,
+        [Switch] $JoinAndCopyFromResultFolders,
         [Switch] $OpenConflictFilesInKdiff,
         [Switch] $RemoveModifyFilesNotInTarget,
         [Switch] $RemoveOriginalFilesNotInTarget
@@ -35,13 +38,13 @@ function Merge-NAVCode
             $SourceModified = $ModifiedFileName
             $SourceTarget = $TargetFileName
 
-            $DestinationOriginal = $WorkingFolderPath  + "\Original\"
-            $DestinationModified =  $WorkingFolderPath  + "\Modified\"
-            $DestinationTarget =  $WorkingFolderPath  + "\Target\"
+            $DestinationOriginal = join-path $WorkingFolderPath   "Original"
+            $DestinationModified =  join-path $WorkingFolderPath   "Modified"
+            $DestinationTarget =  join-path $WorkingFolderPath   "Target"
 
-            $Delta =  $WorkingFolderPath  + "\Delta\"
-            $Result =  $WorkingFolderPath + "\Result\"
-            $Merged =  $WorkingFolderPath  + "\Merged\"
+            $Delta =  join-path $WorkingFolderPath   "Delta"
+            $Result =  join-path $WorkingFolderPath  "Result"
+            $Merged =  join-path $WorkingFolderPath   "Merged"
 
             # Check if folders exists. If not create them.
             if(!(Test-Path -Path $DestinationOriginal )){
@@ -64,25 +67,25 @@ function Merge-NAVCode
             }
 
             #Set Source, modified, target and result values
-            $OriginalCompareObject = $DestinationOriginal + $CompareObject
-            $ModifiedCompareObject = $DestinationModified + $CompareObject
-            $TargetCompareObject = $DestinationTarget + $CompareObject
-            $DeltaUpdateObject = $Delta + $UpdateObject
-            $JoinPath = $Merged + "ToBeJoined\"
-            $JoinSource = $JoinPath + $CompareObject
-            $JoinDestination = $RootFolderPath + "all-merged-objects.txt"
+            $OriginalCompareObject = join-path $DestinationOriginal  $CompareObject
+            $ModifiedCompareObject = join-path $DestinationModified  $CompareObject
+            $TargetCompareObject = join-path $DestinationTarget  $CompareObject
+            $DeltaUpdateObject = join-path $Delta  $UpdateObject
+            $JoinPath = join-path $Merged  "ToBeJoined"
+            $JoinSource = join-path $JoinPath  $CompareObject
+            $JoinDestination = join-path $WorkingFolderPath  "all-merged-objects.txt"
 
             if(!(Test-Path -Path $JoinPath )){
                 New-Item -ItemType directory -Path $JoinPath
             }   
 
-            $CODFolder = $Result + "COD\"
-            $TABFolder = $Result + "TAB\"
-            $PAGFolder = $Result + "PAG\"
-            $REPFolder = $Result + "REP\"
+            $CODFolder = join-path $Result "COD"
+            $TABFolder = join-path $Result "TAB"
+            $PAGFolder = join-path $Result "PAG"
+            $REPFolder = join-path $Result "REP"
 
             # Split text files with many objects
-            If($UpgradeAction -eq "Split")
+            If($Split)
             {
                 write-host "Removing items from the folder $DestinationOriginal*.*" -foregroundcolor "white"
                 Remove-Item -Path "$DestinationOriginal*.*" 
@@ -99,7 +102,8 @@ function Merge-NAVCode
                 write-host "The source file $SourceModified has been split to the destination $DestinationModified" -foregroundcolor "white"
                 write-host "The source file $SourceTarget has been split to the destination $DestinationModified" -foregroundcolor "white"
             }
-            ElseIf($UpgradeAction -eq "Merge")
+            # Merge text files
+            If($Merge)
             {
                 write-host "Empty the folder for result files" -foregroundcolor "white" 
                 Remove-Item -Path "$Result*" -recurse
@@ -109,13 +113,6 @@ function Merge-NAVCode
                     $ResultFiles = Merge-NAVApplicationObject -Modified $ModifiedCompareObject -Original $OriginalCompareObject -Result $Result -Target $TargetCompareObject -DateTimeProperty FromTarget -ModifiedProperty FromModified -VersionListProperty FromTarget -Force 
 				    Write-Host "`nOpen NOTEPAD for each CONFLICT file" -foreground Green
 				    # Open NOTEPAD for each CONFLICT file
-                    #Write-Host $ResultFiles.Count  
-                    #if ($ResultFiles.Count  > 2)
-                    #{
-                    #   write-host "There are to many conflicts files (" + $ResultFiles.Count + ") to open in Kdiff" -foregroundcolor "white"  
-                    #}
-                    #else
-                    #{ 
 				        $ResultFiles | 
 					        Where-Object MergeResult -eq 'Conflict' | 
 					        #foreach { NOTEPAD $_.Conflict }
@@ -128,7 +125,6 @@ function Merge-NAVCode
 					        Where-Object MergeResult -eq 'Conflict' | 
 					        #foreach { & "C:\Program Files\KDiff3\kdiff3" $_.Original $_.Modified $_.Target -o $_.Result }
                             foreach {& $Kdiff $_.Original $_.Modified $_.Target -o  (join-path $Merged (Get-Item $_.Original.FileName).Name) }
-                    #}
                 }else
                 {
                     Merge-NAVApplicationObject -Modified $ModifiedCompareObject -Original $OriginalCompareObject -Result $Result -Target $TargetCompareObject -DateTimeProperty FromTarget -ModifiedProperty FromModified -VersionListProperty FromTarget -Force
@@ -167,21 +163,23 @@ function Merge-NAVCode
 				# Compare ORIGINAL and MODIFIED and merge onto TARGET, then put the merged files in RESULT            
 
             }
-            ElseIf($UpgradeAction -eq "Join")
+            # Join text files to one file
+            If($Join -or $JoinAndCopyFromResultFolders)
             {
-                
-                #Move and copy item to the join folder
-                write-host "Moving files from the folder $CODFolder to the folder $JoinPath" -foregroundcolor "white"
-                get-childitem  -path $CODFolder  | where-object {$_.Name -like "COD*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
-                write-host "Moving files from the folder $TABFolder to the folder $JoinPath" -foregroundcolor "white"
-                get-childitem  -path $TABFolder  | where-object {$_.Name -like "TAB*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
-                write-host "Moving files from the folder $PAGFolder to the folder $JoinPath" -foregroundcolor "white"
-                get-childitem  -path $PAGFolder  | where-object {$_.Name -like "PAG*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
-                write-host "Moving files from the folder $REPFolder to the folder $JoinPath" -foregroundcolor "white"
-                get-childitem  -path $REPFolder  | where-object {$_.Name -like "REP*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
-                write-host "Moving files from the folder $Result to the folder $JoinPath" -foregroundcolor "white"
-                get-childitem  -path $Result  | where-object {$_.Name -like "*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
-                
+                if($JoinCopyFromResultFolders)
+                {
+                    #Move and copy item to the join folder
+                    write-host "Moving files from the folder $CODFolder to the folder $JoinPath" -foregroundcolor "white"
+                    get-childitem  -path $CODFolder  | where-object {$_.Name -like "COD*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
+                    write-host "Moving files from the folder $TABFolder to the folder $JoinPath" -foregroundcolor "white"
+                    get-childitem  -path $TABFolder  | where-object {$_.Name -like "TAB*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
+                    write-host "Moving files from the folder $PAGFolder to the folder $JoinPath" -foregroundcolor "white"
+                    get-childitem  -path $PAGFolder  | where-object {$_.Name -like "PAG*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
+                    write-host "Moving files from the folder $REPFolder to the folder $JoinPath" -foregroundcolor "white"
+                    get-childitem  -path $REPFolder  | where-object {$_.Name -like "REP*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
+                    write-host "Moving files from the folder $Result to the folder $JoinPath" -foregroundcolor "white"
+                    get-childitem  -path $Result  | where-object {$_.Name -like "*.TXT"} | Move-Item -Destination $JoinPath -Force | out-null
+                }
 
                 if ($RemoveOriginalFilesNotInTarget)
                 {
