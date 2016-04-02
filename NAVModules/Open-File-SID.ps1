@@ -12,7 +12,7 @@ function Open-File-SID
 {
     [CmdletBinding()]
     param(
-        [string] $WorkingFolderPath, 
+        [string] $WorkingFolder, 
         [string] $ObjectName,
         [Switch] $OpenOriginal,
         [Switch] $OpenModified,
@@ -27,103 +27,123 @@ function Open-File-SID
     PROCESS
     {
         try
-        { 
-            $NotepadPlus = Join-Path 'C:\Program Files (x86)\Notepad++' 'notepad++.exe'
-            $Kdiff = Join-Path 'C:\Program Files\KDiff3' 'kdiff3.exe'
-            
-            $Original = "$WorkingFolderPath\Original\$ObjectName.TXT"
-            $Modified = "$WorkingFolderPath\Modified\$ObjectName.TXT"
-            $Target = "$WorkingFolderPath\Target\$ObjectName.TXT"
-            $Merged = "$WorkingFolderPath\Merged\$ObjectName.TXT"
-            $ToBeJoined = "$WorkingFolderPath\Merged\ToBeJoined\$ObjectName.TXT"
-            $Result = "$WorkingFolderPath\Result\TAB\$ObjectName.TXT"
+        {       
+            [String] $Original = join-path $WorkingFolder "\Original\$ObjectName.TXT"
+            [String] $Modified = join-path $WorkingFolder "\Modified\$ObjectName.TXT"
+            [String] $Target = join-path $WorkingFolder "\Target\$ObjectName.TXT"
+            [String] $Merged = join-path $WorkingFolder "\Merged\$ObjectName.TXT"
+            [String] $ToBeJoined = join-path $WorkingFolder "\Merged\ToBeJoined\$ObjectName.TXT"
+            [String] $Result = join-path $WorkingFolder "\Result\TAB\$ObjectName.TXT"
+
+            [String] $FileArgs = "";
+            [String] $KdiffFileArgs = '';
 
             if($OpenOriginal) 
             {
-                $FileArgs = $Original
-                #$KdiffFileArgs = join-path $WorkingFolderPath "\Original\$ObjectName.TXT"
+                if((Test-Path -Path $Original))
+                {
+                    $FileArgs = $Original
+                    $KdiffFileArgs = join-path $WorkingFolder "\Original\$ObjectName.TXT"
+                 }
             }
             if($OpenModified) 
             {
-                if($FileArgs)
+                if((Test-Path -Path $Modified))
                 {
-                    $FileArgs = $FileArgs, $Modified
-                    #$KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolderPath "\Modified\$ObjectName.TXT")
-                }
-                else
-                {
-                    $FileArgs = $Modified
-                    #$KdiffFileArgs =  (join-path $WorkingFolderPath "\Modified\$ObjectName.TXT")
+                    if([String]::IsNullOrEmpty($FileArgs))
+                    {
+                        $FileArgs = $Modified
+                        $KdiffFileArgs =  (join-path $WorkingFolder "\Modified\$ObjectName.TXT")          
+                    }
+                    else
+                    {           
+                        $KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolder "\Modified\$ObjectName.TXT")
+                        $FileArgs = $FileArgs, $Modified
+                    }
                 }
             }
             if($OpenTarget) 
             {
-                if($FileArgs)
+                if((Test-Path -Path $Target))
                 {
-                    $FileArgs = $FileArgs, $Target
-                    #$KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolderPath "\Target\$ObjectName.TXT")
-                }
-                else
-                {
-                    $FileArgs = $Target
-                    #$KdiffFileArgs =  (join-path $WorkingFolderPath "\Target\$ObjectName.TXT")
+                    if([String]::IsNullOrEmpty($FileArgs))
+                    {
+                        $FileArgs = $Target
+                        $KdiffFileArgs =  (join-path $WorkingFolder "\Target\$ObjectName.TXT")
+                    }
+                    else
+                    {
+                        $FileArgs = $FileArgs, $Target
+                        $KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolder "\Target\$ObjectName.TXT")
+                    }
                 }
             }
             if($OpenMerged) 
             {
-                if($FileArgs)
+                if((Test-Path -Path $Merged))
                 {
-                    $FileArgs = $FileArgs, $Merged
-                    #$KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolderPath "\Merged\$ObjectName.TXT")
-                }
-                else
-                {
-                    $FileArgs = $Merged
-                    #$KdiffFileArgs =  (join-path $WorkingFolderPath "\Merged\$ObjectName.TXT")
+                    if([String]::IsNullOrEmpty($FileArgs))
+                    {
+                        $FileArgs = $Merged
+                        $KdiffFileArgs =  (join-path $WorkingFolder "\Merged\$ObjectName.TXT")
+                    }
+                    else
+                    {
+                        $FileArgs = $FileArgs, $Merged
+                        # If merging we will not include this file
+                        if(!$OpenMergedInKdiff)
+                        {
+                            $KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolder "\Merged\$ObjectName.TXT")
+                        }         
+                    }
                 }
             }
             if($OpenResult) 
             {
-                if($FileArgs)
+                if((Test-Path -Path $Result))
                 {
-                    $FileArgs = $FileArgs, $Result
-                    #$KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolderPath "\Result\$ObjectName.TXT")
-                }
-                else
-                {
-                    $FileArgs = $Result
-                    #$KdiffFileArgs =  (join-path $WorkingFolderPath "\Result\$ObjectName.TXT")
+                    if([String]::IsNullOrEmpty($FileArgs))
+                    {
+                        $FileArgs = $Result
+                        $KdiffFileArgs =  (join-path $WorkingFolder "\Result\$ObjectName.TXT")
+                    }
+                    else
+                    {
+                        $FileArgs = $FileArgs, $Result
+                        $KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolder "\Result\$ObjectName.TXT")
+                    }
                 }
             }
 
             if($OpenToBeJoined) 
             {
-                if($FileArgs)
+                if([String]::IsNullOrEmpty($FileArgs))
                 {
-                    $FileArgs = $FileArgs, $ToBeJoined
-                    #$KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolderPath "\Result\$ObjectName.TXT")
+                    $FileArgs = $ToBeJoined
+                    $KdiffFileArgs =  (join-path $WorkingFolder "\Merged\ToBeJoined\$ObjectName.TXT")
                 }
                 else
                 {
-                    $FileArgs = $ToBeJoined
-                    #$KdiffFileArgs =  (join-path $WorkingFolderPath "\Result\$ObjectName.TXT")
+                    $FileArgs = $FileArgs, $ToBeJoined
+                    $KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolder "\Merged\ToBeJoined\$ObjectName.TXT")
                 }
             }
 
             if($OpenInNotepadPlus)
-            {
-                & $NotepadPlus $FileArgs                     
+            { 
+                NotepadPlus -ArgumentList $FileArgs      
             }
 
             if($OpenInKdiff -or $OpenMergedInKdiff)
             {
                 if($OpenMergedInKdiff)
-                {
-                    & $Kdiff $Original $Modified $Target -o $Merged                    
+                { 
+                    $KdiffFileArgs =  $KdiffFileArgs + ' -o ' + $Merged 
+                    Kdiff -ArgumentList $KdiffFileArgs                    
                 }
                 else
                 {
-                    & $Kdiff $Original $Modified $Target 
+                    Kdiff -ArgumentList $KdiffFileArgs 
                 }                                                  
             }
         }
