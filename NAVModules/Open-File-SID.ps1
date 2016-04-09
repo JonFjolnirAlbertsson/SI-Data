@@ -22,7 +22,7 @@ function Open-File-SID
         [Switch] $OpenToBeJoined,
         [Switch] $OpenInNotepadPlus,
         [Switch] $OpenInKdiff,
-        [Switch] $OpenMergedInKdiff
+        [Switch] $OpenToMergeInKdiff
         )
     PROCESS
     {
@@ -91,7 +91,7 @@ function Open-File-SID
                     {
                         $FileArgs = $FileArgs, $Merged
                         # If merging we will not include this file
-                        if(!$OpenMergedInKdiff)
+                        if(!$OpenToMergeInKdiff)
                         {
                             $KdiffFileArgs =  $KdiffFileArgs + ' ' + (join-path $WorkingFolder "\Merged\$ObjectName.TXT")
                         }         
@@ -134,9 +134,9 @@ function Open-File-SID
                 NotepadPlus -ArgumentList $FileArgs      
             }
 
-            if($OpenInKdiff -or $OpenMergedInKdiff)
+            if($OpenInKdiff -or $OpenToMergeInKdiff)
             {
-                if($OpenMergedInKdiff)
+                if($OpenToMergeInKdiff)
                 { 
                     $KdiffFileArgs =  $KdiffFileArgs + ' -o ' + $Merged 
                     Kdiff -ArgumentList $KdiffFileArgs                    

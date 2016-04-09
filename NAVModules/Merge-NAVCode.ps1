@@ -2,7 +2,7 @@
 .Synopsis
    Split Original, Modified and Target object file. Creates Folder structure under the working folder
 .DESCRIPTION
-   Uses standard NAV upgrade objects functions
+   Uses standard NAV upgrade objects functions. Join will copy .TXT objects from the Merge folder the
 .NOTES
    
 .PREREQUISITES
@@ -20,7 +20,7 @@ function Merge-NAVCode
         [Switch] $Split,
         [Switch] $Merge,
         [Switch] $Join,
-        [Switch] $JoinAndCopyFromResultFolders,
+        [Switch] $JoinCopyResultFoldersBefore,
         [Switch] $OpenConflictFilesInKdiff,
         [Switch] $RemoveModifyFilesNotInTarget,
         [Switch] $RemoveOriginalFilesNotInTarget
@@ -105,8 +105,8 @@ function Merge-NAVCode
             # Merge text files
             If($Merge)
             {
-                write-host "Empty the folder for result files" -foregroundcolor "white" 
-                Remove-Item -Path "$Result*" -recurse
+                write-host "Empty the folder for result files. $Result." -foregroundcolor "white" 
+                Remove-Item -Path (join-path $Result '*.*') -recurse
 
                 if ($OpenConflictFilesInKdiff)
                 {
@@ -131,16 +131,16 @@ function Merge-NAVCode
                 }
                 write-host "Creating the folder $CODFolder or deleting all files in the folde. " -foregroundcolor "white" 
                 New-Item -Path $CODFolder -ItemType directory -Force | out-null
-                Remove-Item -Path "$CODFolder*.*"
+                Remove-Item -Path (join-path $CODFolder '*.*')
                 write-host "Creating the folder $TABFolder or deleting all files in the folde. " -foregroundcolor "white" 
                 New-Item -Path $TABFolder -ItemType directory -Force | out-null
-                Remove-Item -Path "$TABFolder*.*"
+                Remove-Item -Path (join-path $TABFolder '*.*')
                 write-host "Creating the folder $PAGFolder or deleting all files in the folde. " -foregroundcolor "white" 
                 New-Item -Path $PAGFolder -ItemType directory -Force | out-null
-                Remove-Item -Path "$PAGFolder*.*"   
+                Remove-Item -Path (join-path $PAGFolder '*.*')  
                 write-host "Creating the folder $REPFolder or deleting all files in the folde. " -foregroundcolor "white" 
                 New-Item -Path $REPFolder -ItemType directory -Force | out-null
-                Remove-Item -Path "$REPFolder*.*"
+                Remove-Item -Path (join-path $REPFolder '*.*')
 
                 #get-childitem  -path $Result  | where-object {$_.Name -like "COD*.*"} | Out-Default
                 get-childitem  -path $Result  | where-object {$_.Name -like "COD*.*"} | Move-Item -Destination $CODFolder -Force | out-null
@@ -164,9 +164,9 @@ function Merge-NAVCode
 
             }
             # Join text files to one file
-            If($Join -or $JoinAndCopyFromResultFolders)
+            If($Join -or $JoinCopyResultFoldersBefore)
             {
-                if($JoinCopyFromResultFolders)
+                if($JoinCopyResultFoldersBefore)
                 {
                     #Move and copy item to the join folder
                     write-host "Moving files from the folder $CODFolder to the folder $JoinPath" -foregroundcolor "white"
