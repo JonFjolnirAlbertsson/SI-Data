@@ -46,7 +46,7 @@ If a user or a role defined in this list already exists in NAV, the cmdlet is ex
 http://blogs.msdn.com/b/powershell/archive/2006/11/03/erroraction-and-errorvariable.aspx
 #>
 
-$NavServerName ="DynamicsNAV71"
+$NavServerName ="nav71sidata"
 
 $list = Import-csv -Path $UsersFileName2Import -Encoding Unicode -Delimiter ';' -Header username,fullname,roleset
 foreach ($user in $list) 
