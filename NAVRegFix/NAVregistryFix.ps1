@@ -17,6 +17,8 @@ if ( [System.IntPtr]::Size -eq 4 )
 		$nav70exist = ($nav70.Path.Length -gt 0) 
         $nav71 = Get-ItemProperty -path "HKLM:\SOFTWARE\Microsoft\Microsoft Dynamics NAV\71\RoleTailored Client" -ErrorAction SilentlyContinue
 		$nav71exist = ($nav71.Path.Length -gt 0)
+        $nav90 = Get-ItemProperty -path "HKLM:\SOFTWARE\Microsoft\Microsoft Dynamics NAV\90\RoleTailored Client" -ErrorAction SilentlyContinue
+		$nav90exist = ($nav90.Path.Length -gt 0)
         if ( $nav71exist)
           {
            
@@ -41,18 +43,20 @@ if ( [System.IntPtr]::Size -eq 4 )
                 if ($nav70exist) 
 				    { $exe70 = $net[0]+ ' /register ' + '"' + $nav70.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' }
                 $exe71 = $net[0]+ ' /register ' + '"' + $nav71.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb'
+                $exe90 = $net[0]+ ' /register ' + '"' + $nav90.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb'
               }
            else 
               {
                 if ($nav70exist) 
 				   { $exe70 = $net+ ' /register ' + '"' + $nav70.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' }
                 $exe71 = $net+ ' /register ' + '"' + $nav71.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' 
+                $exe90 = $net+ ' /register ' + '"' + $nav90.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' 
               }
               
            if ($nav70exist) 
 		      { Invoke-Expression $exe70 }
            Invoke-Expression $exe71  
-           
+           Invoke-Expression $exe90
 
           }
          else
@@ -78,6 +82,8 @@ if ( [System.IntPtr]::Size -eq 4 )
 		$nav70exist = ($nav70.Path.Length -gt 0) 
         $nav71 = Get-ItemProperty -path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Microsoft Dynamics NAV\71\RoleTailored Client" -ErrorAction SilentlyContinue
 		$nav71exist = ($nav71.Path.Length -gt 0) 
+        $nav90 = Get-ItemProperty -path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Microsoft Dynamics NAV\90\RoleTailored Client" -ErrorAction SilentlyContinue
+		$nav90exist = ($nav90.Path.Length -gt 0) 
         if ($nav71exist)
 		{
            # Processing registry correction on 64-bits
@@ -97,17 +103,20 @@ if ( [System.IntPtr]::Size -eq 4 )
                  if ($nav70exist) 
 				    { $exe70 = $net[0]+ ' /register ' + '"' + $nav70.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' }
                  $exe71 = $net[0]+ ' /register ' + '"' + $nav71.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb'
+                 $exe90 = $net[0]+ ' /register ' + '"' + $nav90.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb'
               }
            else 
               {
                 if ($nav70exist) 
 				   { $exe70 = $net+ ' /register ' + '"' + $nav70.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' }
-                 $exe71 = $net+ ' /register ' + '"' + $nav71.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' 
+                $exe71 = $net+ ' /register ' + '"' + $nav71.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' 
+                $exe90 = $net+ ' /register ' + '"' + $nav90.Path +'Microsoft.Dynamics.Nav.Client.WinForms.dll" /tlb' 
               }
               
            if ($nav70exist) 
 		      { Invoke-Expression $exe70 }
            Invoke-Expression $exe71  
+           Invoke-Expression $exe90 
                
            } 
          else 
